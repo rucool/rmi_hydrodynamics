@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 import os
-from NJDPU_Functions import Pstr,Phi,Tau_mix_L,Tau_mix_H
+from model1_functions import Pstr,Phi,Tau_mix_L,Tau_mix_H
 
 filename = 'Test_Model_1_H25_H315.csv'       # Name of Output .csv File
 
