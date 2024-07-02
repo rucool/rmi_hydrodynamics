@@ -1,4 +1,4 @@
-
+This repository is a python implementation of the steady-state model presented in Carpenter et al., (2016) as used in Cassin et al., (2024).
 
 
 
