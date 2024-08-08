@@ -1,208 +1,121 @@
-## Ryan Cassin      10/03/2023
-
 import numpy as np
 import pandas as pd
 import os
-from model1_functions import Pstr,Phi,Tau_mix_L,Tau_mix_H
-
-filename = 'Test_Model_1_H25_H315.csv'       # Name of Output .csv File
-
-CDL = 0.35          # Low Drag Coefficient (demensionless)
-CDH = 1.0           # High Drage Coefficient (demensionless)
-
-D = 11.28           # Diameter of Monopile Turbine foundation (m)
-l = 1000            # Turbine Spaceing (m)
-
-rho0 = 1026         # Reference Ocean Density (kg/m^3)
-rho_s = 1022
-rho_b = 1026
-g = 9.81            # Acceleration Due to Gravity (m/s^2)
-Rif = 0.17          # Renolds Flux Number
-
-H3 = 15             # Thickness of Surface Layer (m)
-H2 = 5             # Thickness of Pycnocline (m)
-
-H = 60              # Total Water Depth (m)
-h = 20              # Min Depth (m)
+from model1_functions import *
+import matplotlib.pyplot as plt
 
 
-# Lists to store data
-datasave_Pstr_L = []
-datasave_Pstr_H = []
-datasave_phi = []
-datasave_L_D = []
-datasave_H_D = []
 
-# Calculate Phi and The Stength of Stiring Pstr
-while h <= H:
-    phi = Phi (rho_s,rho_b,g,H3,H2,h)
-    datasave_phi.append(phi)
-    u = 0.1
-    while u <= 0.8:
-        Pstr_L, Pstr_H = Pstr (CDL,CDH,D,l,rho0,u,h)
+
+pper = ['setup','peak','breakdown']
+#initial profiles csv for set up peak and breakdown based on glider profiles
+#these intial profiles are 25m
+init_profs = pd.read_csv('./carp_pea_init_profs.csv')
+
+res_df = None #initialize none to concat result dataframe to for each period
+extend = False
+dmax_extend = 40 #depth you want profile extended to
+dz = 0.25
+
+
+fig,ax=plt.subplots(1,3,figsize=(12,8),sharey=True)
+
+
+for ii,per in enumerate(pper):
+    print(per)
+    init_df = init_profs[init_profs.per==per]
+    # if we want this extended to 40m
+    if extend == True:
+        dmin_extend = init_df['z'].iloc[-1].astype(int)+dz
+        z_extend = np.arange(dmin_extend,dmax_extend+dz,dz)
+        dens_extend = [init_df['dens'].iloc[-1]]*len(z_extend)
+        mldL_extend = [init_df['mldL'].iloc[-1]]*len(z_extend)
+        mldU_extend = [init_df['mldU'].iloc[-1]]*len(z_extend)
+        p_thick_extend = [init_df['p_thick'].iloc[-1]]*len(z_extend)
+        pea_extend = [init_df['pea'].iloc[-1]]*len(z_extend)
+        per_extend = [init_df['per'].iloc[-1]]*len(z_extend)
+        extend_df = pd.DataFrame({'z':z_extend,'dens':dens_extend,'mldU':mldU_extend,'mldL':mldL_extend,'p_thick':p_thick_extend,'pea':pea_extend,'per':per_extend})
+
+        init_df = pd.concat([init_df,extend_df],ignore_index=True)
+    
+
+    
+
+    ## model
+
+    datasave_Pstr_H=[]
+    datasave_Pstr_L=[]
+    datasave_L_D = []
+    datasave_H_D = []
+
+    #params from initial compisite profiles
+    H = init_df['z'].iloc[-1].astype(int)
+
+
+    dens = init_df['dens'].values
+    mldU_g = init_df['mldU'].iloc[0].astype(int)
+    mldL_g = init_df['mldL'].iloc[0].astype(int)
+
+    #change to z up positive like carpenter
+    z = np.flipud(init_df['z'].values)
+    mldL_c = H-mldL_g
+    mldU_c = H-mldU_g
+
+    b=mldU_c-mldL_c #pycnocline thickness
+    h = (mldU_c+mldL_c)/2 #height off bottom to center of pycnocline
+    
+    
+
+    rho_s = init_df['dens'].iloc[0].astype(int) #surface dens
+    rho_b = init_df['dens'].iloc[-1].astype(int) #bottom dens
+
+    
+    #params replicated from Carpenter et al., 2016
+    CDL = 0.35          # Low Drag Coefficient (dimensionless)
+    CDH = 1.0           # High Drage Coefficient (dimensionless)
+
+    D = 11.28           # Diameter of Monopile Turbine foundation (m)
+    l = 1000            # Turbine Spaceing (m)
+
+    rho0 =1026 #np.trapz(dens,dx=dz,axis=0)/H #1026 #Reference Ocean Density (kg/m^3)
+    g = 9.81            # Acceleration Due to Gravity (m/s^2)
+    Rif = 0.17  #flux richardson number
+
+    # Calculate Phi (kj/m2)
+    phi = phi_carpenter(dens,z,dz,H)
+    phi = phi*1000 #bring back to SI units for Pstr calculation
+
+    
+    #range of current velocities covering tidal to storm driven magnitudes
+    u = np.arange(0.1,0.9,0.1)
+    for uu in u:
+        uu = np.round(uu,1)
+        print(uu)
+        Pstr_L, Pstr_H = Pstr (CDL,CDH,D,l,rho0,uu,H)
         datasave_Pstr_L.append(Pstr_L)
         datasave_Pstr_H.append(Pstr_H)
-        u += 0.1
-    h += 5
+        tau_mix_L = Tau_mix_L (phi,H,Rif,Pstr_L,b)
+        tau_mix_H = Tau_mix_H (phi,H,Rif,Pstr_H,b)
+        datasave_L_D.append(tau_mix_L)
+        datasave_H_D.append(tau_mix_H)
 
-h = 20      # Reset h value
+    data = {
+        'Current Velocity': u,
+        'Pstr CD = 0.35': datasave_Pstr_L,
+        'Pstr CD = 1.0': datasave_Pstr_H,
+        'Tmix CD = 0.35': datasave_L_D,
+        'Tmix CD 1.0': datasave_H_D,
+        'h':[h]*len(u),
+        'per':[per]*len(u)
+    }
 
-# Calculate the Mixing Time Period (Tau_mix) for Low and High Drag Cases
-while h <= H:
+    df = pd.DataFrame(data)
 
-    if h > 0 and h <= 20:
-        phi = datasave_phi[0]
-        phi = phi*1000
-        Pstr_L = datasave_Pstr_L[0:8]
-        Pstr_H = datasave_Pstr_H[0:8]
-        n = 0
-        while n <= len(Pstr_L)-1:
-            Pstr_L_value = Pstr_L[n]
-            Pstr_H_value = Pstr_H[n]
-            tau_mix_L = Tau_mix_L (phi,h,Rif,Pstr_L_value,H2)
-            tau_mix_H = Tau_mix_H (phi,h,Rif,Pstr_H_value,H2)
-            datasave_L_D.append(tau_mix_L)
-            datasave_H_D.append(tau_mix_H)
-            n += 1
+    if res_df is None:
+        res_df = df
+    else:
+        res_df = pd.concat([res_df,df])
+    res_df.to_csv('./all_results_H'+str(H)+'.csv',index=False)
+    
 
-    if h > 20 and h <= 25:
-        phi = datasave_phi[1]
-        phi = phi*1000
-        Pstr_L = datasave_Pstr_L[8:16]
-        Pstr_H = datasave_Pstr_H[8:16]
-        n = 0
-        while n <= len(Pstr_L)-1:
-            Pstr_L_value = Pstr_L[n]
-            Pstr_H_value = Pstr_H[n]
-            tau_mix_L = Tau_mix_L (phi,h,Rif,Pstr_L_value,H2)
-            tau_mix_H = Tau_mix_H (phi,h,Rif,Pstr_H_value,H2)
-            datasave_L_D.append(tau_mix_L)
-            datasave_H_D.append(tau_mix_H)
-            n += 1
-
-    if h > 25 and h <= 30:
-        phi = datasave_phi[2]
-        phi = phi*1000
-        Pstr_L = datasave_Pstr_L[16:24]
-        Pstr_H = datasave_Pstr_H[16:24]
-        n = 0
-        while n <= len(Pstr_L)-1:
-            Pstr_L_value = Pstr_L[n]
-            Pstr_H_value = Pstr_H[n]
-            tau_mix_L = Tau_mix_L (phi,h,Rif,Pstr_L_value,H2)
-            tau_mix_H = Tau_mix_H (phi,h,Rif,Pstr_H_value,H2)
-            datasave_L_D.append(tau_mix_L)
-            datasave_H_D.append(tau_mix_H)
-            n += 1
-
-    if h > 30 and h <= 35:
-        phi = datasave_phi[3]
-        phi = phi*1000
-        Pstr_L = datasave_Pstr_L[24:32]
-        Pstr_H = datasave_Pstr_H[24:32]
-        n = 0
-        while n <= len(Pstr_L)-1:
-            Pstr_L_value = Pstr_L[n]
-            Pstr_H_value = Pstr_H[n]
-            tau_mix_L = Tau_mix_L (phi,h,Rif,Pstr_L_value,H2)
-            tau_mix_H = Tau_mix_H (phi,h,Rif,Pstr_H_value,H2)
-            datasave_L_D.append(tau_mix_L)
-            datasave_H_D.append(tau_mix_H)
-            n += 1
-
-    if h > 35 and h <= 40:
-        phi = datasave_phi[4]
-        phi = phi*1000
-        Pstr_L = datasave_Pstr_L[32:40]
-        Pstr_H = datasave_Pstr_H[32:40]
-        n = 0
-        while n <= len(Pstr_L)-1:
-            Pstr_L_value = Pstr_L[n]
-            Pstr_H_value = Pstr_H[n]
-            tau_mix_L = Tau_mix_L (phi,h,Rif,Pstr_L_value,H2)
-            tau_mix_H = Tau_mix_H (phi,h,Rif,Pstr_H_value,H2)
-            datasave_L_D.append(tau_mix_L)
-            datasave_H_D.append(tau_mix_H)
-            n += 1
-
-    if h > 40 and h <= 45:
-        phi = datasave_phi[5]
-        phi = phi*1000
-        Pstr_L = datasave_Pstr_L[40:48]
-        Pstr_H = datasave_Pstr_H[40:48]
-        n = 0
-        while n <= len(Pstr_L)-1:
-            Pstr_L_value = Pstr_L[n]
-            Pstr_H_value = Pstr_H[n]
-            tau_mix_L = Tau_mix_L (phi,h,Rif,Pstr_L_value,H2)
-            tau_mix_H = Tau_mix_H (phi,h,Rif,Pstr_H_value,H2)
-            datasave_L_D.append(tau_mix_L)
-            datasave_H_D.append(tau_mix_H)
-            n += 1
-
-    if h > 45 and h <= 50:
-        phi = datasave_phi[6]
-        phi = phi*1000
-        Pstr_L = datasave_Pstr_L[48:56]
-        Pstr_H = datasave_Pstr_H[48:56]
-        n = 0
-        while n <= len(Pstr_L)-1:
-            Pstr_L_value = Pstr_L[n]
-            Pstr_H_value = Pstr_H[n]
-            tau_mix_L = Tau_mix_L (phi,h,Rif,Pstr_L_value,H2)
-            tau_mix_H = Tau_mix_H (phi,h,Rif,Pstr_H_value,H2)
-            datasave_L_D.append(tau_mix_L)
-            datasave_H_D.append(tau_mix_H)
-            n += 1
-
-    if h > 50 and h <= 55:
-        phi = datasave_phi[7]
-        phi = phi*1000
-        Pstr_L = datasave_Pstr_L[56:64]
-        Pstr_H = datasave_Pstr_H[56:64]
-        n = 0
-        while n <= len(Pstr_L)-1:
-            Pstr_L_value = Pstr_L[n]
-            Pstr_H_value = Pstr_H[n]
-            tau_mix_L = Tau_mix_L (phi,h,Rif,Pstr_L_value,H2)
-            tau_mix_H = Tau_mix_H (phi,h,Rif,Pstr_H_value,H2)
-            datasave_L_D.append(tau_mix_L)
-            datasave_H_D.append(tau_mix_H)
-            n += 1
-
-    if h > 55 and h <= 60:
-        phi = datasave_phi[8]
-        phi = phi*1000
-        Pstr_L = datasave_Pstr_L[64:72]
-        Pstr_H = datasave_Pstr_H[64:72]
-        n = 0
-        while n <= len(Pstr_L)-1:
-            Pstr_L_value = Pstr_L[n]
-            Pstr_H_value = Pstr_H[n]
-            tau_mix_L = Tau_mix_L (phi,h,Rif,Pstr_L_value,H2)
-            tau_mix_H = Tau_mix_H (phi,h,Rif,Pstr_H_value,H2)
-            datasave_L_D.append(tau_mix_L)
-            datasave_H_D.append(tau_mix_H)
-            n += 1
-            
-    h = h+5
-
-# Save Data to .csv File
-u = np.array([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8])
-u = np.tile(u,(9,1))
-
-data = {
-    'Current Velocity': u.flatten(),
-    'Pstr CD = 0.35': datasave_Pstr_L,
-    'Pstr CD = 1.0': datasave_Pstr_H,
-    'Tmix CD = 0.35': datasave_L_D,
-    'Tmix CD 1.0': datasave_H_D
-}
-
-filepath = os.path.join("./", filename)
-
-df = pd.DataFrame(data)
-df.to_csv(filepath,index=False)
-
-print("Model 1 |", filename, "| Run Complete" )
-
+plot_model_results(res_df,H)
