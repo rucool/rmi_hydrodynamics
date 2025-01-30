@@ -1,6 +1,8 @@
 ## Glider_Data:
 
-glider2composite.ipynb - Glider deployments were retrieved from the Rutgers [ERDDAP](http://slocum-data.marine.rutgers.edu//erddap) server from 2010 to present and subset so that only the portions of the track inside of the nearshore NJ Wind Lease Areas (WLAs) OCS-532, 498, 499, and 549 were analyzed. The deployments were split into three periods during Cold Pool set up (May – June), peak (July – August) and breakdown (September – October). Mixed Layer Depth and Potential Energy Anomaly are calculated to create composite profiles to initialize the carpenter mixing models (steady-state and unsteady). This notebook is available for download only due to the large amount of data being pulled from ERDDAP. 
+glider2composite.ipynb - Glider deployments were retrieved from the Rutgers [ERDDAP](http://slocum-data.marine.rutgers.edu//erddap) server from 2010 to present and subset so that only the portions of the track inside of the nearshore NJ Wind Lease Areas (WLAs) OCS-532, 498, 499, and 549 were analyzed. The deployments were split into three periods during Cold Pool set up (May – June), peak (July – August) and breakdown (September – October). Mixed Layer Depth and Potential Energy Anomaly are calculated to create composite profiles to initialize the carpenter mixing models (steady-state and unsteady). 
+
+This notebook is available for download only due to the large amount of data being pulled from ERDDAP. 
 
 Metadata for the glider data is provided by ERDDAP.
 
@@ -12,7 +14,7 @@ These notebooks are available to run using colab.
 
 ## DOPPIO_DAC
 
-
+DOPPIO_DAC.ipynb - Extracts depth averaged water velocities across 13 years (2010 – 2023) of numerical model simualtions from the Regional Ocean Modeling System (ROMS) [DOPPIO](https://tds.marine.rutgers.edu/thredds/catalog/catalog.html) at the centroid location of OCS-A 0499. The DOPPIO model is a regional domain at 7km spatial resolution, with 41 vertical layers, designed to represent the complex circulation and hydrodynamics of the MAB coastal areas. The water velocity distribution is compared to the Tmix results from the Carpenter mixing model to highlight the differences in timescales.
 
 
 ## References:
