@@ -1,15 +1,15 @@
-Glider_Data:
+## Glider_Data:
 
-The glider2composite notebook grabs all glider data from ERDDAP within a bounding box over a specified time period. The data is then clipped to be inside of the wind lease area. Mixed Layer Depth and Potential Energy Anomaly are calculated to create composite profiles to initialize the carpenter mixing models (steady-state and unsteady). This notebook is available for download only due to the large amount of data being pulled from ERDDAP. 
+glider2composite.ipynb - Glider deployments were retrieved from 2010 to present and subset so that only the portions of the track inside of the nearshore NJ Wind Lease Areas (WLAs) OCS-532, 498, 499, and 549 were analyzed. The deployments were split into three periods during Cold Pool set up (May – June), peak (July – August) and breakdown (September – October). Mixed Layer Depth and Potential Energy Anomaly are calculated to create composite profiles to initialize the carpenter mixing models (steady-state and unsteady). This notebook is available for download only due to the large amount of data being pulled from ERDDAP. 
 
 Metadata for the glider data is provided by ERDDAP.
 
-Carpenter_Mixing_2016:
+## Carpenter_Mixing_2016:
 
 This repository is a python implementation of both the steady-state and unsteady models presented in Carpenter et al., (2016) as used in Cassin et al., (2024). These notebook are available to run using colab.
 
 
-References:
+## References:
 
 Cassin, R., Miles, T. N., & Pareja-Roman, L. F. (2024, February). Investigating Potential Impacts of Offshore Wind Turbine Foundations on the Mid-Atlantic Bight Cold Pool. In 2024 Ocean Sciences Meeting. AGU.
 
