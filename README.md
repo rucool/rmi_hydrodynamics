@@ -6,7 +6,13 @@ Metadata for the glider data is provided by ERDDAP.
 
 ## Carpenter_Mixing_2016:
 
-This repository is a python implementation of both the steady-state and unsteady models presented in Carpenter et al., (2016) as used in Cassin et al., (2024). These notebook are available to run using colab.
+This repository is a python implementation of both the steady-state (steady_state_model.ipynb) and unsteady (unsteady_model.ipynb) models presented in Carpenter et al., (2016) as used in Cassin et al., (2024).  The steady-state and unsteady models are used to approximate how much time the stratification would take to mix, (Tmix) at varying current speeds ranging from 0.01 to 0.8m/s at 0.01 incremenents to represent tidal and storm magnitudes. Experiments are performed at high and low drag coefficients, CD ,  of 0.35 and 1, which account for uncertainty from the monopile roughness, armor layer, among other physical uncertainties in drag
+
+These notebooksare available to run using colab.
+
+## DOPPIO_DAC
+
+
 
 
 ## References:
