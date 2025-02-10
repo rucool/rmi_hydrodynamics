@@ -26,7 +26,7 @@ This notebook is available to run using colab.
 
 2. steady_state_model.ipynb and unsteady_model.ipynb:  Initialize both models using carp_pea_init_profs.csv to calculate mixing timescales. These notebooks will output a single csv for all three periods (steady_state_results_H25.csv and unsteady_results_H25.csv).
 
-3. DOPPIO_DAC.ipynb: Use steady_state_results_H25.csv and unsteady_results_H25.csv and the known centroid location of OCS A-0499 to extract depth averaged velocities and generate a histogram comparing the velocity to the mixing timescales.
+3. DOPPIO_DAC.ipynb: Use steady_state_results_H25.csv, unsteady_results_H25.csv, and the known centroid location of OCS A-0499 to extract depth averaged velocities and generate a histogram comparing the velocity to the mixing timescales.
 
 ## References:
 
