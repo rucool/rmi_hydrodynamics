@@ -22,11 +22,11 @@ This notebook is available to run using colab.
 
 ## Work-flow
 
-1. Use the glider2compsite notebook to generate composite potential density profiles from in-situ glider data. This will export a carp_pea_init_profs.csv of profiles for set up peak and breakdown periods.
+1. glider2compsite.ipynb: Generate composite potential density profiles from in-situ glider data. This notebook will export a carp_pea_init_profs.csv of profiles for set up peak and breakdown periods.
 
-2. Use the composite profiles to initialize both models (steady_state_model and unsteady_model notebooks) in order to calculate mixing timescales. The model will output a single csv for all three periods (steady_state_results_H25.csv and unsteady_results_H25.csv).
+2. steady_state_model.ipynb and unsteady_model.ipynb:  Initialize both models using carp_pea_init_profs.csv to calculate mixing timescales. These notebooks will output a single csv for all three periods (steady_state_results_H25.csv and unsteady_results_H25.csv).
 
-3. Use the mixing timescale csv and the known centroid location of OCS A-0499 to exract depth averaged velocities in the DOPPIO_DAC notebook and generate a histogram comparing the velocity to the mixing timescales.
+3. DOPPIO_DAC.ipynb: Use steady_state_results_H25.csv and unsteady_results_H25.csv and the known centroid location of OCS A-0499 to extract depth averaged velocities and generate a histogram comparing the velocity to the mixing timescales.
 
 ## References:
 
