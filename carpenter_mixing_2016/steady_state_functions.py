@@ -26,12 +26,21 @@ def phi_carpenter(rho,z,dz,max_depth):
 
     g = 9.8 #m/s
 
-    
-    #calculate depth averaged rho
-    rho_mix=np.trapz(rho,dx=dz,axis=0)*(1/max_depth)
+    # convert z to height above bottom
+    z_new=-1*(z-max_depth)
 
-    drho = (rho_mix-rho)*(z)*g
-    phi=np.trapz(drho[::-1],z[::-1],dx=dz,axis=0)/1000
+    # get index of sorted array for monotonically increasing z
+    sorted_i = np.argsort(z_new)
+
+    # sort z and rho by increasing z
+    z_new = z_new[sorted_i]
+    rho_new = rho[sorted_i]  
+  
+    #calculate depth averaged rho
+    rho_mix=np.trapz(rho_new, z_new, axis=0)*(1/max_depth)
+
+    drho = (rho_mix-rho_new)*(z_new)*g
+    phi=np.trapz(drho, z_new, axis=0)/1000
 
     return phi
 
