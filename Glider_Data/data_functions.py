@@ -208,8 +208,8 @@ def phi_carpenter(rho,z,dz,max_depth):
     #calculate depth averaged rho
     rho_mix=np.trapz(rho,dx=dz,axis=0)*(1/max_depth)
 
-    drho = (rho_mix-rho)*(z)
-    phi=np.trapz(drho,dx=dz,axis=0)*g/1000
+    drho = (rho_mix-rho)*(z)*g
+    phi=np.trapz(drho[::-1],z[::-1],dx=dz,axis=0)/1000
 
     return phi
 
