@@ -235,9 +235,9 @@ def prof_phi(pdf):
     rho =tdf.potential_density.values
     z=tdf.depth.values
     max_depth=z.max()
-    dz=0.25
+    
 
-    pea=phi_carpenter(rho,-z,dz,max_depth)
+    pea=phi_carpenter(rho,z,max_depth)
     return pea
 
 
