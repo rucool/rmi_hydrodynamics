@@ -190,14 +190,14 @@ def prof_pea(pdf):
 
 
 
-def phi_carpenter(rho,z,dz,max_depth):
+def phi_carpenter(rho,z,max_depth):
     """
     Based on Carpenter et al 2016
     rho - rho profile
     z - depth profile (z oriented upwards +)
-    dz - step for interpolation (meters)
+    
 
-    returns pea kj/m^2
+    returns phi kj/m^2
     """
 
     g = 9.8 #m/s
